@@ -1,0 +1,89 @@
+.formulario-reserva {
+  max-width: 42rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 0.0625rem solid #d9d9d9;
+  border-radius: 0.75rem;
+  background-color: #ffffff;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+}
+
+.formulario-reserva h2 {
+  margin-top: 0;
+  color: #173b2b;
+}
+
+.formulario-reserva form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.formulario-reserva label {
+  display: grid;
+  gap: 0.4rem;
+  color: #173b2b;
+  font-weight: 700;
+}
+
+.formulario-reserva input {
+  width: 100%;
+  padding: 0.7rem;
+  border: 0.0625rem solid #b8c7bf;
+  border-radius: 0.4rem;
+  font: inherit;
+}
+
+.formulario-reserva input:focus {
+  border-color: #2f7d56;
+  outline: 0.1875rem solid rgba(47, 125, 86, 0.18);
+}
+
+.formulario-reserva button {
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background-color: #2f7d56;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.formulario-reserva button:hover:not(:disabled) {
+  background-color: #1e5e3d;
+}
+
+.formulario-reserva button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.formulario-reserva .campo-erro {
+  border-color: #c62828;
+}
+
+.formulario-reserva .mensagem-erro,
+.mensagem-indisponivel {
+  margin: 0.3rem 0 0;
+  color: #c62828;
+}
+
+.mensagem-disponivel,
+.reserva-confirmada {
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border-radius: 0.4rem;
+  background-color: #e6f4ea;
+  color: #1e5e3d;
+}
+
+.reserva-confirmada h3,
+.reserva-confirmada p {
+  margin: 0;
+}
+
+.reserva-confirmada p {
+  margin-top: 0.4rem;
+}
