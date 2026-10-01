@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import FormularioReserva from '../componentes/FormularioReserva'
+import './PaginaEspaco.css'
 
 const API = 'http://localhost:3001/hotelanimais'
 
@@ -50,12 +51,20 @@ function PaginaEspaco() {
 
   return (
     <section className="pagina-espaco">
-      <button type="button" onClick={() => navigate(-1)}>
+      <button
+        className="botao-voltar"
+        type="button"
+        onClick={() => navigate(-1)}
+      >
         ← Voltar
       </button>
 
       {espaco.imagem ? (
-        <img src={espaco.imagem} alt={espaco.nome} />
+      <img
+        className="imagem-espaco"
+        src={espaco.imagem}
+        alt={espaco.nome}
+      />
       ) : (
         <p>Imagem ainda não disponível.</p>
       )}
@@ -72,6 +81,15 @@ function PaginaEspaco() {
       <p>Capacidade: {espaco.capacidade} animal(is)</p>
       <p>Avaliação: {espaco.avaliacao} / 5</p>
       <p>Passeios diários: {espaco.passeiosDiarios}</p>
+
+      <p>
+        Espaço exterior: {espaco.espacoExterior ? 'Disponível' : 'Não disponível'}
+      </p>
+
+      <p>
+        Vigilância veterinária:{' '}
+        {espaco.vigilanciaVeterinaria ? 'Disponível' : 'Não disponível'}
+      </p>
 
       {/* O formulário recebe os limites e o preço do espaço já carregado. */}
     <FormularioReserva
