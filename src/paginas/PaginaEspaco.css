@@ -1,0 +1,50 @@
+/* Estrutura principal da página de detalhe. */
+.pagina-espaco {
+  max-width: 70rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  color: #173b2b;
+}
+
+/* Botão de navegação independente do formulário de reserva. */
+.botao-voltar {
+  margin-bottom: 1.5rem;
+  padding: 0.65rem 1rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background-color: #e8f2ec;
+  color: #173b2b;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao-voltar:hover {
+  background-color: #cfe3d6;
+}
+
+.imagem-espaco {
+  display: block;
+  width: min(100%, 34rem);
+  max-height: 25rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12);
+}
+
+.pagina-espaco h1 {
+  margin-bottom: 0.5rem;
+  color: #173b2b;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.pagina-espaco > p {
+  max-width: 44rem;
+  line-height: 1.6;
+}
+
+.pagina-espaco > p:nth-of-type(2) {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
