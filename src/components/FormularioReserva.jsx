@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import './FormularioReserva.css'
 
 const API = 'http://localhost:3001/hotelanimais'
+const hoje = new Date().toISOString().slice(0, 10)
 
 function FormularioReserva({ itemId, capacidade, precoNoite }) {
   const [dataInicio, setDataInicio] = useState('')
@@ -16,14 +18,26 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
   const [mensagem, setMensagem] = useState('')
   const [reservaCriada, setReservaCriada] = useState(null)
 
-  const hoje = new Date().toISOString().slice(0, 10)
-
-  // Alterar datas ou quantidade obriga a uma nova verificação.
-  useEffect(() => {
+  function invalidarDisponibilidade() {
     setDisponivel(null)
     setMensagem('')
     setReservaCriada(null)
-  }, [dataInicio, dataFim, quantidade])
+  }
+
+  function alterarDataInicio(valor) {
+    setDataInicio(valor)
+    invalidarDisponibilidade()
+  }
+
+  function alterarDataFim(valor) {
+    setDataFim(valor)
+    invalidarDisponibilidade()
+  }
+
+  function alterarQuantidade(valor) {
+    setQuantidade(valor)
+    invalidarDisponibilidade()
+  }
 
   function validarReserva() {
     const novosErros = {}
@@ -146,6 +160,10 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
 
       setReservaCriada(dados)
       setDisponivel(true)
+      localStorage.setItem(
+        'hotelanimais-email',
+        email.trim().toLowerCase(),
+      )
     } catch (erro) {
       // Um erro 409 significa que já não existe disponibilidade.
       setDisponivel(false)
@@ -169,7 +187,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             type="date"
             min={hoje}
             value={dataInicio}
-            onChange={(evento) => setDataInicio(evento.target.value)}
+            onChange={(evento) => alterarDataInicio(evento.target.value)}
             className={erros.dataInicio ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.dataInicio)}
           />
@@ -184,7 +202,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             type="date"
             min={dataInicio || hoje}
             value={dataFim}
-            onChange={(evento) => setDataFim(evento.target.value)}
+            onChange={(evento) => alterarDataFim(evento.target.value)}
             className={erros.dataFim ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.dataFim)}
           />
@@ -201,7 +219,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             max={capacidade}
             step="1"
             value={quantidade}
-            onChange={(evento) => setQuantidade(evento.target.value)}
+            onChange={(evento) => alterarQuantidade(evento.target.value)}
             className={erros.quantidade ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.quantidade)}
           />
@@ -260,6 +278,9 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
           <h3>Reserva criada com sucesso</h3>
 
           <p>Total: {Number(reservaCriada.total).toFixed(2)} €</p>
+          <Link className="ligacao-reservas" to="/reservas">
+            Ver as minhas reservas
+          </Link>
         </section>
       )}
     </section>

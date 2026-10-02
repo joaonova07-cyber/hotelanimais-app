@@ -84,6 +84,12 @@
   margin: 0;
 }
 
+.ligacao-reservas {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 700;
+}
+
 .reserva-confirmada p {
   margin-top: 0.4rem;
 }

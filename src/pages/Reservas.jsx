@@ -20,6 +20,11 @@ function formatarData(data) {
 
 export default function Reservas() {
   const [reservas, setReservas] = useState([]);
+  const [emailGuardado, setEmailGuardado] = useState(
+    () => localStorage.getItem("hotelanimais-email") ?? "",
+  );
+  const [emailIntroduzido, setEmailIntroduzido] = useState(emailGuardado);
+  const [erroEmail, setErroEmail] = useState("");
   const [aCarregar, setACarregar] = useState(true);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState("");
@@ -43,6 +48,30 @@ export default function Reservas() {
     carregar();
     return () => controller.abort();
   }, []);
+
+  const minhasReservas = emailGuardado
+    ? reservas.filter(
+        (reserva) =>
+          typeof reserva.email === "string" &&
+          reserva.email.toLowerCase() === emailGuardado.toLowerCase(),
+      )
+    : [];
+
+  function guardarEmail(evento) {
+    evento.preventDefault();
+    const emailNormalizado = emailIntroduzido.trim().toLowerCase();
+
+    if (!/^\S+@\S+\.\S+$/.test(emailNormalizado)) {
+      setErroEmail("Indica um email válido.");
+      return;
+    }
+
+    localStorage.setItem("hotelanimais-email", emailNormalizado);
+    setEmailGuardado(emailNormalizado);
+    setEmailIntroduzido(emailNormalizado);
+    setErroEmail("");
+    setSucesso("");
+  }
 
   async function tratarCancelamento(reserva) {
     const confirmado = window.confirm(
@@ -78,6 +107,32 @@ export default function Reservas() {
         </div>
       </div>
 
+      <form className="filtro-email-reservas" onSubmit={guardarEmail} noValidate>
+        <label htmlFor="email-reservas">Email usado na reserva</label>
+        <div>
+          <input
+            id="email-reservas"
+            type="email"
+            value={emailIntroduzido}
+            onChange={(evento) => setEmailIntroduzido(evento.target.value)}
+            aria-invalid={Boolean(erroEmail)}
+            aria-describedby={erroEmail ? "erro-email-reservas" : undefined}
+            placeholder="nome@exemplo.pt"
+          />
+          <button type="submit">
+            {emailGuardado ? "Alterar email" : "Ver reservas"}
+          </button>
+        </div>
+        {erroEmail && (
+          <p id="erro-email-reservas" className="mensagem-erro" role="alert">
+            {erroEmail}
+          </p>
+        )}
+        {emailGuardado && (
+          <p className="email-em-uso">A mostrar reservas de {emailGuardado}.</p>
+        )}
+      </form>
+
       {erro && (
         <p className="mensagem-erro" role="alert">
           {erro}
@@ -90,15 +145,21 @@ export default function Reservas() {
         </p>
       )}
 
-      {reservas.length === 0 && !erro ? (
+      {!emailGuardado ? (
+        <div className="estado-vazio">
+          <span aria-hidden="true">✉️</span>
+          <h3>Indica o teu email</h3>
+          <p>Usa o mesmo email com que fizeste a reserva.</p>
+        </div>
+      ) : minhasReservas.length === 0 && !erro ? (
         <div className="estado-vazio">
           <span aria-hidden="true">📅</span>
-          <h3>Ainda não existem reservas</h3>
-          <p>As reservas criadas irão aparecer nesta página.</p>
+          <h3>Não existem reservas para este email</h3>
+          <p>Confirma o email ou cria uma nova reserva.</p>
         </div>
       ) : (
         <div className="lista-reservas">
-          {reservas.map((reserva) => {
+          {minhasReservas.map((reserva) => {
             const aCancelar = idACancelar === reserva.id;
 
             return (
