@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { API_URL } from '../services/api'
 import './FormularioReserva.css'
 
-const API = 'http://localhost:3001/hotelanimais'
 const hoje = new Date().toISOString().slice(0, 10)
 
 function FormularioReserva({ itemId, capacidade, precoNoite }) {
@@ -17,6 +17,28 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
   const [disponivel, setDisponivel] = useState(null)
   const [mensagem, setMensagem] = useState('')
   const [reservaCriada, setReservaCriada] = useState(null)
+  const pedidosRef = useRef(new Set())
+  const montadoRef = useRef(true)
+
+  useEffect(() => {
+    montadoRef.current = true
+    const pedidos = pedidosRef.current
+    return () => {
+      montadoRef.current = false
+      pedidos.forEach((controller) => controller.abort())
+    }
+  }, [])
+
+  async function lerResposta(resposta, mensagemPadrao) {
+    let dados
+    try {
+      dados = await resposta.json()
+    } catch {
+      throw new Error(`${mensagemPadrao} A API devolveu uma resposta inválida.`)
+    }
+    if (!resposta.ok) throw new Error(dados?.erro || mensagemPadrao)
+    return dados
+  }
 
   function invalidarDisponibilidade() {
     setDisponivel(null)
@@ -86,7 +108,9 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
       return
     }
 
+    const controller = new AbortController()
     try {
+      pedidosRef.current.add(controller)
       setAVerificar(true)
       setMensagem('')
       setReservaCriada(null)
@@ -98,29 +122,25 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
         quantidade: String(Number(quantidade)),
       })
 
-      const resposta = await fetch(
-        `${API}/itens/${itemId}/disponibilidade?${parametros}`,
-      )
+      const resposta = await fetch(`${API_URL}/itens/${itemId}/disponibilidade?${parametros}`, { signal: controller.signal })
+      const dados = await lerResposta(resposta, 'Não foi possível verificar a disponibilidade.')
 
-      const dados = await resposta.json()
-
-      if (!resposta.ok) {
-        throw new Error(
-          dados.erro || 'Não foi possível verificar a disponibilidade.',
+      if (montadoRef.current) {
+        setDisponivel(dados.disponivel)
+        setMensagem(
+          dados.disponivel
+            ? 'O espaço está disponível para estas datas.'
+            : 'Este espaço não está disponível para estas datas.',
         )
       }
-
-      setDisponivel(dados.disponivel)
-      setMensagem(
-        dados.disponivel
-          ? 'O espaço está disponível para estas datas.'
-          : 'Este espaço não está disponível para estas datas.',
-      )
     } catch (erro) {
-      setDisponivel(false)
-      setMensagem(erro.message)
+      if (erro.name !== 'AbortError') {
+        setDisponivel(false)
+        setMensagem(erro instanceof TypeError ? 'Não foi possível contactar a API.' : erro.message)
+      }
     } finally {
-      setAVerificar(false)
+      pedidosRef.current.delete(controller)
+      if (montadoRef.current) setAVerificar(false)
     }
   }
 
@@ -132,13 +152,17 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
       return
     }
 
+    const controller = new AbortController()
     try {
+      pedidosRef.current.add(controller)
       setAReservar(true)
       setMensagem('')
+      setReservaCriada(null)
 
       // A API exige itemId e quantidade como valores numéricos.
-      const resposta = await fetch(`${API}/reservas`, {
+      const resposta = await fetch(`${API_URL}/reservas`, {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -152,24 +176,25 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
         }),
       })
 
-      const dados = await resposta.json()
+      const dados = await lerResposta(resposta, 'Não foi possível criar a reserva.')
 
-      if (!resposta.ok) {
-        throw new Error(dados.erro || 'Não foi possível criar a reserva.')
+      if (montadoRef.current) {
+        setReservaCriada(dados)
+        setDisponivel(true)
+        localStorage.setItem(
+          'hotelanimais-email',
+          email.trim().toLowerCase(),
+        )
       }
-
-      setReservaCriada(dados)
-      setDisponivel(true)
-      localStorage.setItem(
-        'hotelanimais-email',
-        email.trim().toLowerCase(),
-      )
     } catch (erro) {
       // Um erro 409 significa que já não existe disponibilidade.
-      setDisponivel(false)
-      setMensagem(erro.message)
+      if (erro.name !== 'AbortError') {
+        setDisponivel(false)
+        setMensagem(erro instanceof TypeError ? 'Não foi possível contactar a API.' : erro.message)
+      }
     } finally {
-      setAReservar(false)
+      pedidosRef.current.delete(controller)
+      if (montadoRef.current) setAReservar(false)
     }
   }
 
@@ -253,12 +278,13 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
         </label>
 
         <button type="submit" disabled={aVerificar || aReservar}>
-          {aVerificar ? 'A verificar...' : 'Verificar disponibilidade'}
+          {aVerificar ? 'A verificar disponibilidade...' : 'Verificar disponibilidade'}
         </button>
       </form>
 
       {mensagem && (
         <p
+          role={disponivel ? 'status' : 'alert'}
           className={
             disponivel ? 'mensagem-disponivel' : 'mensagem-indisponivel'
           }
@@ -272,6 +298,8 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
           {aReservar ? 'A criar reserva...' : 'Confirmar reserva'}
         </button>
       )}
+
+      {aReservar && <p role="status">A criar reserva...</p>}
 
       {reservaCriada && (
         <section className="reserva-confirmada">
