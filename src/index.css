@@ -272,6 +272,21 @@ button:hover {
   color: #9b2020;
 }
 
+.mensagem-sucesso { padding: 16px; border: 1px solid #9dcbbd; border-radius: 8px; background: #edf8f4; color: #175c50; }
+.lista-reservas { display: grid; gap: 20px; }
+.cartao-reserva { padding: 24px; border: 1px solid #dce2ea; border-radius: 12px; background: white; }
+.cabecalho-reserva { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 18px; border-bottom: 1px solid #dce2ea; }
+.cabecalho-reserva h3, .etiqueta-reserva, .total-reserva { margin: 0; }
+.etiqueta-reserva { margin-bottom: 4px; color: #526077; font-size: 14px; }
+.total-reserva { color: #175c50; font-size: 22px; font-weight: bold; white-space: nowrap; }
+.detalhes-reserva { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 20px 0; }
+.detalhes-reserva dt { color: #526077; font-size: 14px; font-weight: bold; }
+.detalhes-reserva dd { margin: 3px 0 0; overflow-wrap: anywhere; }
+.email-reserva { grid-column: span 2; }
+.botao-cancelar { border: 1px solid #ad2938; background: white; color: #9b2020; }
+.botao-cancelar:hover:not(:disabled) { background: #fff0f0; }
+.botao-cancelar:disabled { cursor: wait; opacity: 0.65; }
+
 .rodape {
   padding: 32px 16px;
   text-align: center;
@@ -302,4 +317,9 @@ button:hover {
   .cabecalho {
     padding: 24px 0;
   }
+
+  .cabecalho-reserva { flex-direction: column; gap: 10px; }
+  .detalhes-reserva { grid-template-columns: 1fr 1fr; }
+  .email-reserva { grid-column: 1 / -1; }
+  .botao-cancelar { width: 100%; }
 }

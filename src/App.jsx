@@ -2,6 +2,7 @@ import { Link, Route, Routes } from "react-router-dom";
 import ListaEspacos from "./pages/ListaEspacos";
 import DetalheEspaco from "./pages/DetalheEspaco";
 import Favoritos from "./pages/Favoritos";
+import Reservas from "./pages/Reservas";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
             <nav aria-label="Navegação principal">
               <Link to="/">Espaços</Link>
               <Link to="/favoritos">♥ Favoritos</Link>
+              <Link to="/reservas">As minhas reservas</Link>
             </nav>
           </div>
         </div>
@@ -28,6 +30,8 @@ export default function App() {
           <Route path="/espacos/:id" element={<DetalheEspaco />} />
 
           <Route path="/favoritos" element={<Favoritos />} />
+
+          <Route path="/reservas" element={<Reservas />} />
 
           <Route
             path="*"
