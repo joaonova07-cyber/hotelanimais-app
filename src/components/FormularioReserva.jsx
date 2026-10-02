@@ -134,7 +134,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
         )
       }
     } catch (erro) {
-      if (erro.name !== 'AbortError') {
+      if (montadoRef.current && erro.name !== 'AbortError') {
         setDisponivel(false)
         setMensagem(erro instanceof TypeError ? 'Não foi possível contactar a API.' : erro.message)
       }
@@ -188,7 +188,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
       }
     } catch (erro) {
       // Um erro 409 significa que já não existe disponibilidade.
-      if (erro.name !== 'AbortError') {
+      if (montadoRef.current && erro.name !== 'AbortError') {
         setDisponivel(false)
         setMensagem(erro instanceof TypeError ? 'Não foi possível contactar a API.' : erro.message)
       }
@@ -217,7 +217,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             aria-invalid={Boolean(erros.dataInicio)}
           />
           {erros.dataInicio && (
-            <p className="mensagem-erro">{erros.dataInicio}</p>
+            <p className="mensagem-erro" role="alert">{erros.dataInicio}</p>
           )}
         </label>
 
@@ -232,7 +232,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             aria-invalid={Boolean(erros.dataFim)}
           />
           {erros.dataFim && (
-            <p className="mensagem-erro">{erros.dataFim}</p>
+            <p className="mensagem-erro" role="alert">{erros.dataFim}</p>
           )}
         </label>
 
@@ -249,7 +249,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             aria-invalid={Boolean(erros.quantidade)}
           />
           {erros.quantidade && (
-            <p className="mensagem-erro">{erros.quantidade}</p>
+            <p className="mensagem-erro" role="alert">{erros.quantidade}</p>
           )}
         </label>
 
@@ -262,7 +262,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             className={erros.nome ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.nome)}
           />
-          {erros.nome && <p className="mensagem-erro">{erros.nome}</p>}
+          {erros.nome && <p className="mensagem-erro" role="alert">{erros.nome}</p>}
         </label>
 
         <label>
@@ -274,7 +274,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             className={erros.email ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.email)}
           />
-          {erros.email && <p className="mensagem-erro">{erros.email}</p>}
+          {erros.email && <p className="mensagem-erro" role="alert">{erros.email}</p>}
         </label>
 
         <button type="submit" disabled={aVerificar || aReservar}>
