@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import FavoriteButton from '../components/FavoriteButton'
 import FormularioReserva from '../components/FormularioReserva'
 import './PaginaEspaco.css'
 
@@ -69,7 +70,10 @@ function PaginaEspaco() {
         <p>Imagem ainda não disponível.</p>
       )}
 
-      <h1>{espaco.nome}</h1>
+      <div className="cabecalho-espaco">
+        <h1>{espaco.nome}</h1>
+        <FavoriteButton itemId={espaco.id} />
+      </div>
 
       <p>
         {espaco.categoria} · Porte {espaco.porte} · {espaco.localizacao}
