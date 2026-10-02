@@ -41,12 +41,12 @@ export default function Favoritos() {
     favoritos.includes(Number(espaco.id))
   );
 
-  if (aCarregar) return <p role="status">A carregar favoritos...</p>;
+  if (aCarregar) return <p role="status">A carregar espaços...</p>;
 
   if (erro) {
     return (
       <p className="mensagem-erro" role="alert">
-        {erro} Confirma que a API está a funcionar.
+        {erro}
       </p>
     );
   }

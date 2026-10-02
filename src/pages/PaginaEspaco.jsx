@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import FavoriteButton from '../components/FavoriteButton'
 import FormularioReserva from '../components/FormularioReserva'
+import { obterEspaco } from '../services/api'
 import './PaginaEspaco.css'
-
-const API = 'http://localhost:3001/hotelanimais'
 
 function PaginaEspaco() {
   const { id } = useParams()
@@ -12,41 +12,39 @@ function PaginaEspaco() {
   const [espaco, setEspaco] = useState(null)
   const [aCarregar, setACarregar] = useState(true)
   const [erro, setErro] = useState(null)
+  const [imagemFalhada, setImagemFalhada] = useState(false)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     async function carregarEspaco() {
       try {
         setACarregar(true)
         setErro(null)
 
-        const resposta = await fetch(`${API}/itens/${id}`)
-
-        if (!resposta.ok) {
-          throw new Error('Espaço não encontrado.')
-        }
-
-        const dados = await resposta.json()
-        setEspaco(dados)
-      } catch {
-        setErro('Não foi possível carregar este espaço.')
+        const dados = await obterEspaco(id, controller.signal)
+        if (!controller.signal.aborted) setEspaco(dados)
+      } catch (error) {
+        if (!controller.signal.aborted) setErro(error.message)
       } finally {
-        setACarregar(false)
+        if (!controller.signal.aborted) setACarregar(false)
       }
     }
 
     carregarEspaco()
+    return () => controller.abort()
   }, [id])
 
   if (aCarregar) {
-    return <p>A carregar espaço...</p>
+    return <p role="status">A carregar detalhes...</p>
   }
 
   if (erro) {
-    return <p>{erro}</p>
+    return <p className="mensagem-erro" role="alert">{erro}</p>
   }
 
   if (!espaco) {
-    return <p>Espaço não encontrado.</p>
+    return <p className="mensagem-erro" role="alert">Espaço não encontrado.</p>
   }
 
   return (
@@ -59,17 +57,21 @@ function PaginaEspaco() {
         ← Voltar
       </button>
 
-      {espaco.imagem ? (
+      {espaco.imagem && !imagemFalhada ? (
       <img
         className="imagem-espaco"
         src={espaco.imagem}
         alt={espaco.nome}
+        onError={() => setImagemFalhada(true)}
       />
       ) : (
-        <p>Imagem ainda não disponível.</p>
+        <div className="imagem-substituta" role="img" aria-label="Espaço sem fotografia disponível">🐾</div>
       )}
 
-      <h1>{espaco.nome}</h1>
+      <div className="cabecalho-espaco">
+        <h1>{espaco.nome}</h1>
+        <FavoriteButton itemId={espaco.id} />
+      </div>
 
       <p>
         {espaco.categoria} · Porte {espaco.porte} · {espaco.localizacao}

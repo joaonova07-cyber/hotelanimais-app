@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { API_URL } from '../services/api'
 import './FormularioReserva.css'
 
-const API = 'http://localhost:3001/hotelanimais'
+const hoje = new Date().toISOString().slice(0, 10)
 
 function FormularioReserva({ itemId, capacidade, precoNoite }) {
   const [dataInicio, setDataInicio] = useState('')
@@ -15,15 +17,49 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
   const [disponivel, setDisponivel] = useState(null)
   const [mensagem, setMensagem] = useState('')
   const [reservaCriada, setReservaCriada] = useState(null)
+  const pedidosRef = useRef(new Set())
+  const montadoRef = useRef(true)
 
-  const hoje = new Date().toISOString().slice(0, 10)
-
-  // Alterar datas ou quantidade obriga a uma nova verificação.
   useEffect(() => {
+    montadoRef.current = true
+    const pedidos = pedidosRef.current
+    return () => {
+      montadoRef.current = false
+      pedidos.forEach((controller) => controller.abort())
+    }
+  }, [])
+
+  async function lerResposta(resposta, mensagemPadrao) {
+    let dados
+    try {
+      dados = await resposta.json()
+    } catch {
+      throw new Error(`${mensagemPadrao} A API devolveu uma resposta inválida.`)
+    }
+    if (!resposta.ok) throw new Error(dados?.erro || mensagemPadrao)
+    return dados
+  }
+
+  function invalidarDisponibilidade() {
     setDisponivel(null)
     setMensagem('')
     setReservaCriada(null)
-  }, [dataInicio, dataFim, quantidade])
+  }
+
+  function alterarDataInicio(valor) {
+    setDataInicio(valor)
+    invalidarDisponibilidade()
+  }
+
+  function alterarDataFim(valor) {
+    setDataFim(valor)
+    invalidarDisponibilidade()
+  }
+
+  function alterarQuantidade(valor) {
+    setQuantidade(valor)
+    invalidarDisponibilidade()
+  }
 
   function validarReserva() {
     const novosErros = {}
@@ -72,7 +108,9 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
       return
     }
 
+    const controller = new AbortController()
     try {
+      pedidosRef.current.add(controller)
       setAVerificar(true)
       setMensagem('')
       setReservaCriada(null)
@@ -84,29 +122,25 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
         quantidade: String(Number(quantidade)),
       })
 
-      const resposta = await fetch(
-        `${API}/itens/${itemId}/disponibilidade?${parametros}`,
-      )
+      const resposta = await fetch(`${API_URL}/itens/${itemId}/disponibilidade?${parametros}`, { signal: controller.signal })
+      const dados = await lerResposta(resposta, 'Não foi possível verificar a disponibilidade.')
 
-      const dados = await resposta.json()
-
-      if (!resposta.ok) {
-        throw new Error(
-          dados.erro || 'Não foi possível verificar a disponibilidade.',
+      if (montadoRef.current) {
+        setDisponivel(dados.disponivel)
+        setMensagem(
+          dados.disponivel
+            ? 'O espaço está disponível para estas datas.'
+            : 'Este espaço não está disponível para estas datas.',
         )
       }
-
-      setDisponivel(dados.disponivel)
-      setMensagem(
-        dados.disponivel
-          ? 'O espaço está disponível para estas datas.'
-          : 'Este espaço não está disponível para estas datas.',
-      )
     } catch (erro) {
-      setDisponivel(false)
-      setMensagem(erro.message)
+      if (montadoRef.current && erro.name !== 'AbortError') {
+        setDisponivel(false)
+        setMensagem(erro instanceof TypeError ? 'Não foi possível contactar a API.' : erro.message)
+      }
     } finally {
-      setAVerificar(false)
+      pedidosRef.current.delete(controller)
+      if (montadoRef.current) setAVerificar(false)
     }
   }
 
@@ -118,13 +152,17 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
       return
     }
 
+    const controller = new AbortController()
     try {
+      pedidosRef.current.add(controller)
       setAReservar(true)
       setMensagem('')
+      setReservaCriada(null)
 
       // A API exige itemId e quantidade como valores numéricos.
-      const resposta = await fetch(`${API}/reservas`, {
+      const resposta = await fetch(`${API_URL}/reservas`, {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -138,20 +176,25 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
         }),
       })
 
-      const dados = await resposta.json()
+      const dados = await lerResposta(resposta, 'Não foi possível criar a reserva.')
 
-      if (!resposta.ok) {
-        throw new Error(dados.erro || 'Não foi possível criar a reserva.')
+      if (montadoRef.current) {
+        setReservaCriada(dados)
+        setDisponivel(true)
+        localStorage.setItem(
+          'hotelanimais-email',
+          email.trim().toLowerCase(),
+        )
       }
-
-      setReservaCriada(dados)
-      setDisponivel(true)
     } catch (erro) {
       // Um erro 409 significa que já não existe disponibilidade.
-      setDisponivel(false)
-      setMensagem(erro.message)
+      if (montadoRef.current && erro.name !== 'AbortError') {
+        setDisponivel(false)
+        setMensagem(erro instanceof TypeError ? 'Não foi possível contactar a API.' : erro.message)
+      }
     } finally {
-      setAReservar(false)
+      pedidosRef.current.delete(controller)
+      if (montadoRef.current) setAReservar(false)
     }
   }
 
@@ -169,12 +212,12 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             type="date"
             min={hoje}
             value={dataInicio}
-            onChange={(evento) => setDataInicio(evento.target.value)}
+            onChange={(evento) => alterarDataInicio(evento.target.value)}
             className={erros.dataInicio ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.dataInicio)}
           />
           {erros.dataInicio && (
-            <p className="mensagem-erro">{erros.dataInicio}</p>
+            <p className="mensagem-erro" role="alert">{erros.dataInicio}</p>
           )}
         </label>
 
@@ -184,12 +227,12 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             type="date"
             min={dataInicio || hoje}
             value={dataFim}
-            onChange={(evento) => setDataFim(evento.target.value)}
+            onChange={(evento) => alterarDataFim(evento.target.value)}
             className={erros.dataFim ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.dataFim)}
           />
           {erros.dataFim && (
-            <p className="mensagem-erro">{erros.dataFim}</p>
+            <p className="mensagem-erro" role="alert">{erros.dataFim}</p>
           )}
         </label>
 
@@ -201,12 +244,12 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             max={capacidade}
             step="1"
             value={quantidade}
-            onChange={(evento) => setQuantidade(evento.target.value)}
+            onChange={(evento) => alterarQuantidade(evento.target.value)}
             className={erros.quantidade ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.quantidade)}
           />
           {erros.quantidade && (
-            <p className="mensagem-erro">{erros.quantidade}</p>
+            <p className="mensagem-erro" role="alert">{erros.quantidade}</p>
           )}
         </label>
 
@@ -219,7 +262,7 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             className={erros.nome ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.nome)}
           />
-          {erros.nome && <p className="mensagem-erro">{erros.nome}</p>}
+          {erros.nome && <p className="mensagem-erro" role="alert">{erros.nome}</p>}
         </label>
 
         <label>
@@ -231,16 +274,17 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
             className={erros.email ? 'campo-erro' : ''}
             aria-invalid={Boolean(erros.email)}
           />
-          {erros.email && <p className="mensagem-erro">{erros.email}</p>}
+          {erros.email && <p className="mensagem-erro" role="alert">{erros.email}</p>}
         </label>
 
         <button type="submit" disabled={aVerificar || aReservar}>
-          {aVerificar ? 'A verificar...' : 'Verificar disponibilidade'}
+          {aVerificar ? 'A verificar disponibilidade...' : 'Verificar disponibilidade'}
         </button>
       </form>
 
       {mensagem && (
         <p
+          role={disponivel ? 'status' : 'alert'}
           className={
             disponivel ? 'mensagem-disponivel' : 'mensagem-indisponivel'
           }
@@ -255,11 +299,16 @@ function FormularioReserva({ itemId, capacidade, precoNoite }) {
         </button>
       )}
 
+      {aReservar && <p role="status">A criar reserva...</p>}
+
       {reservaCriada && (
         <section className="reserva-confirmada">
           <h3>Reserva criada com sucesso</h3>
 
           <p>Total: {Number(reservaCriada.total).toFixed(2)} €</p>
+          <Link className="ligacao-reservas" to="/reservas">
+            Ver as minhas reservas
+          </Link>
         </section>
       )}
     </section>

@@ -273,6 +273,12 @@ button:hover {
 }
 
 .mensagem-sucesso { padding: 16px; border: 1px solid #9dcbbd; border-radius: 8px; background: #edf8f4; color: #175c50; }
+.filtro-email-reservas { display: grid; gap: 8px; margin-bottom: 24px; padding: 20px; border: 1px solid #dce2ea; border-radius: 12px; background: white; }
+.filtro-email-reservas label { font-weight: bold; }
+.filtro-email-reservas > div { display: flex; gap: 10px; }
+.filtro-email-reservas input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #aeb8c6; border-radius: 8px; font: inherit; }
+.filtro-email-reservas button { padding: 10px 16px; border: 0; border-radius: 8px; background: #175c50; color: white; font: inherit; font-weight: bold; cursor: pointer; }
+.email-em-uso { margin: 0; color: #526077; }
 .lista-reservas { display: grid; gap: 20px; }
 .cartao-reserva { padding: 24px; border: 1px solid #dce2ea; border-radius: 12px; background: white; }
 .cabecalho-reserva { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 18px; border-bottom: 1px solid #dce2ea; }
@@ -319,6 +325,7 @@ button:hover {
   }
 
   .cabecalho-reserva { flex-direction: column; gap: 10px; }
+  .filtro-email-reservas > div { align-items: stretch; flex-direction: column; }
   .detalhes-reserva { grid-template-columns: 1fr 1fr; }
   .email-reserva { grid-column: 1 / -1; }
   .botao-cancelar { width: 100%; }

@@ -102,7 +102,7 @@ export default function ListaEspacos() {
   if (erro) {
     return (
       <p className="mensagem-erro" role="alert">
-        {erro} Confirma que a API está a funcionar.
+        {erro}
       </p>
     );
   }
