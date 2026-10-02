@@ -1,14 +1,23 @@
 import { Link, Route, Routes } from "react-router-dom";
 import ListaEspacos from "./pages/ListaEspacos";
 import DetalheEspaco from "./pages/DetalheEspaco";
+import Favoritos from "./pages/Favoritos";
 
 export default function App() {
   return (
     <>
       <header className="cabecalho">
         <div className="contentor">
-          <h1>Hotel para Animais</h1>
-          <p>Encontra o espaço ideal para o teu cão ou gato.</p>
+          <div className="topo">
+            <div>
+              <h1>Hotel para Animais</h1>
+              <p>Encontra o espaço ideal para o teu cão ou gato.</p>
+            </div>
+            <nav aria-label="Navegação principal">
+              <Link to="/">Espaços</Link>
+              <Link to="/favoritos">♥ Favoritos</Link>
+            </nav>
+          </div>
         </div>
       </header>
 
@@ -17,6 +26,8 @@ export default function App() {
           <Route path="/" element={<ListaEspacos />} />
 
           <Route path="/espacos/:id" element={<DetalheEspaco />} />
+
+          <Route path="/favoritos" element={<Favoritos />} />
 
           <Route
             path="*"
