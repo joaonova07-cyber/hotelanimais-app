@@ -1,6 +1,6 @@
 import { Link, Route, Routes } from "react-router-dom";
 import ListaEspacos from "./pages/ListaEspacos";
-import DetalheEspaco from "./pages/DetalheEspaco";
+import PaginaEspaco from "./pages/PaginaEspaco";
 import Favoritos from "./pages/Favoritos";
 import Reservas from "./pages/Reservas";
 
@@ -27,7 +27,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<ListaEspacos />} />
 
-          <Route path="/espacos/:id" element={<DetalheEspaco />} />
+          <Route path="/espacos/:id" element={<PaginaEspaco />} />
 
           <Route path="/favoritos" element={<Favoritos />} />
 

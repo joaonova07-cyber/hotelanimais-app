@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import FormularioReserva from '../componentes/FormularioReserva'
+import FormularioReserva from '../components/FormularioReserva'
 import './PaginaEspaco.css'
 
 const API = 'http://localhost:3001/hotelanimais'
